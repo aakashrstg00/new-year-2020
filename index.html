@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Track Your Resolution</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css?family=Poppins');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        #container {
+            padding: 24px;
+        }
+
+        .month {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            border: 1px solid none;
+            border-radius: 8px;
+            background-color: rgb(238, 238, 238);
+            margin-top: 16px;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .month-title {
+            min-width: 170px;
+            padding-left: 20px;
+        }
+
+        .month .days {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .days .day {
+            text-align: center;
+            height: 48px;
+            width: 48px;
+            margin: 12px;
+            padding-top: 10px;
+            border: 1px solid rgb(218, 218, 218);
+            box-shadow: 1px 3px 3px rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            font-size: 18px;
+            background-color: #fff;
+            transition: 0.3s;
+            cursor: pointer;
+        }
+
+        .days .day:hover {
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .days .day.done {
+            background-color: #4bb543;
+        }
+    </style>
+    <style>
+        .text-center {
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <h1 style="padding-top: 20px; text-align: center;">
+        It's 2020 Bitches!
+        <p style="color: #444; font-size: 16px;">What time is it? It's Track-Your-Resolution time</p>
+    </h1>
+    <div id="container">
+        <p> <strong>What does it do?</strong> &nbsp;-> Marks every day for which you complete your New Year's resolution.</p>
+    </div>
+    <script>
+        if (!window.localStorage) {
+            console.log('This browser doesn\'t support LocalStorage');
+            alert('Don\'t use this app!');
+        }
+
+        function addToDB(data, callback) {
+            try {
+                if (!localStorage.getItem(data.month)) {
+                    localStorage.setItem(data.month, data.day);
+                    callback({
+                        done: true,
+                        color: true
+                    });
+                } else {
+                    var daysFromDB = localStorage.getItem(data.month).split(',');
+                    if (!daysFromDB.includes(data.day)) {
+                        daysFromDB.push(data.day);
+                        localStorage.setItem(data.month, daysFromDB);
+                        callback({
+                            done: true,
+                            color: true
+                        });
+                    } else {
+                        daysFromDB = daysFromDB.filter(e => e != data.day);
+                        localStorage.setItem(data.month, daysFromDB);
+                        callback({
+                            done: true,
+                            color: false
+                        });
+                    }
+                }
+            } catch {
+                callback({
+                    done: false
+                });
+            }
+        }
+
+        const year2020 = {
+            months: ["January", "February", "March", "April", "May", "June", "July", "August", "September",
+                "October", "November", "December"
+            ],
+            days: [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+        };
+
+        var container = document.getElementById('container');
+        year2020.months.forEach((month, monthNum) => {
+            monthElement = document.createElement('div');
+            monthElement.className = "month";
+
+            monthTitle = document.createElement('h2');
+            monthTitle.innerHTML = month;
+            monthTitle.className = "month-title"
+            monthElement.appendChild(monthTitle);
+
+            daysElement = document.createElement('div');
+            daysElement.className = "days";
+
+            var daysFromDB = (localStorage.getItem(month)) ? localStorage.getItem(month).split(',') : []
+            console.log('daysfromdb',daysFromDB);
+
+            for (let i = 1; i <= year2020.days[monthNum]; i++) {
+                dayElement = document.createElement('div');
+                dayElement.className = "day";
+                dayElement.innerHTML = i;
+                dayElement.setAttribute("data-month", month);
+                dayElement.setAttribute("data-day", i);
+                dayElement.setAttribute("title", (new Date("2020 " + month + " " + i).toUTCString().slice(0,
+                    3)));
+                dayElement.addEventListener("click", e => {
+                    console.log(e.target.getAttribute("data-month"), e.target.getAttribute(
+                        "data-day"));
+                    var item = {
+                        month: e.target.getAttribute("data-month"),
+                        day: e.target.getAttribute("data-day")
+                    };
+                    addToDB(item, v => {
+                        if (!v.done) console.error('nahi hua');
+                        else if (v.color) {
+                            e.target.className += " done";
+                        } else if (!v.color) {
+                            e.target.className = "day";
+                        }
+                    });
+                });
+                daysFromDB.includes(i.toString()) && (dayElement.className += " done");
+
+                daysElement.appendChild(dayElement);
+            }
+
+            monthElement.appendChild(daysElement);
+            container.appendChild(monthElement);
+        });
+    </script>
+</body>
+
+</html>
